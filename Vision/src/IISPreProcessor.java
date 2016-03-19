@@ -25,26 +25,19 @@ public final class IISPreProcessor {
 	public static BufferedImage LowPassFilter(BufferedImage source, int maskDimensions)
 	{
 		int dimensions = maskDimensions*maskDimensions;
-
-		float[] LOWPASS= new float[dimensions];
-		
+		float[] LOWPASS= new float[dimensions];	
 		for(int i=0;i<LOWPASS.length;i++)
 		{
 			LOWPASS[i] = (float)1/dimensions;
 		}
 		
 		BufferedImage enhancedImage = ImageOp.convolver(source,LOWPASS);
-
-
 		return enhancedImage;
-
 	}
 	
-	
-	
+		
 	public static void Median()
 	{
 		
-	}
-	
+	}	
 }

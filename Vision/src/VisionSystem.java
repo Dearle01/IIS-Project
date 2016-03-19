@@ -14,16 +14,11 @@ public class VisionSystem
 		new VisionSystem();
 	}
 
-
 	public VisionSystem()
-
 	{
-
 		try
-
 		{
-
-			
+		
 			JVision jvis = new JVision();
 			
 			jvis.setBounds(0, 0, 1500, 1000);
@@ -35,23 +30,14 @@ public class VisionSystem
 			chooser.setMultiSelectionEnabled(true);
 			chooser.showOpenDialog(jvis);
 			File[] files = chooser.getSelectedFiles();
-			
-
 
 			//loading in the training images
 			ArrayList<BufferedImage> trainingImages = new ArrayList<BufferedImage>();
 			
-			
-			
-			
-
 			for (int i = 0; i < files.length; i++) {
 				
 				BufferedImage buffImg = readInImage(files[i].getName()); 
-				
-
 				trainingImages.add(buffImg);
-
 			}
 
 			//coordinates for displaying images on screen
@@ -67,12 +53,9 @@ public class VisionSystem
 				if(x>=1250)
 				{
 					x=0;
-					y+=250;
-					
-					
+					y+=250;		
 				}
 			}
-	
 
 //			preprocessed images created using approp method, stored in array
 			BufferedImage[] preprocessedImages = new BufferedImage[trainingImages.size()];
@@ -81,8 +64,7 @@ public class VisionSystem
 			{
 				
 				Histogram h = new Histogram(trainingImages.get(i));
-				
-				
+								
 				//calculating m and c values for linear stretching 
 				float hmax = h.getMaxValue();
 				float hmin = h.getMinValue();
@@ -91,12 +73,8 @@ public class VisionSystem
 				System.out.println(m);
 				System.out.println(c);
 				
-				
-				
 				preprocessedImages[i] = enhanceContrast(trainingImages.get(i),m,c);
 				//preprocessedImages[i] = enhanceContrastH(trainingImages.get(i));
-				
-
 			}
 
 			JVision second = new JVision();
@@ -117,11 +95,7 @@ public class VisionSystem
 					x=0;
 					y+=250;
 				}
-
-				
-
 			}
-
 
 //			// same again but with thresholding the preprocessed images
 			BufferedImage[] thresholdedImages = new BufferedImage[preprocessedImages.length];
@@ -138,7 +112,6 @@ public class VisionSystem
 			}
 
 			JVision third = new JVision();
-
 			x=0;
 			y=0;
 
@@ -152,7 +125,6 @@ public class VisionSystem
 					x=0;
 					y+=250;
 				}
-
 			}
 
 
@@ -162,7 +134,6 @@ public class VisionSystem
 			for(int i=0;i<preprocessedImages.length;i++)
 			{
 				postprocessedImages[i] = postprocessAnImage(thresholdedImages[i]);
-
 			}
 
 			JVision fourth = new JVision();
@@ -179,8 +150,7 @@ public class VisionSystem
 					x=0;
 					y+=250;
 				}
-				
-				
+							
 				int [] areaArr = new int [postprocessedImages.length];
 				
 				for(int j=0;j<areaArr.length;j++){
@@ -191,16 +161,12 @@ public class VisionSystem
 				//System.out.println(calculatePerimeter(postprocessedImages[i]));
 
 			}
-
 		}
 
 		catch(Exception e)
-
 		{ 
-			System.out.println(e);
-			
+			System.out.println(e);		
 		}
-
 	}
 	
 	public void nearestNeighbourCalc(BufferedImage source, int [] areaArray, BufferedImage [] imgs)
@@ -210,8 +176,7 @@ public class VisionSystem
 		//get area of image passed in to calculate nearest neighbours
 		int vt = area(source);
 		for(int i=0;i<areaArray.length;i++)
-		{
-			
+		{		
 			vd[i]=vt-areaArray[i];
 		}
 		
@@ -248,18 +213,15 @@ public class VisionSystem
 		j.setBounds(0, 0, 1500, 1000);
 		
 		int x =0;
-		int y = 0;
-		
+		int y = 0;	
 		
 		for(int i=0;i<nnImages.length;i++)
 		{
-		displayAnImage(nnImages[i], j, x, y, "");
-		x+=250;
+			displayAnImage(nnImages[i], j, x, y, "");
+			x+=250;
 		}
 		
-		displayAnImage(source,j,0,500,"original");
-		
-		
+		displayAnImage(source,j,0,500,"original");	
 	}
 
 	public BufferedImage postprocessAnImage(BufferedImage source)
@@ -267,7 +229,6 @@ public class VisionSystem
 		BufferedImage i = ImageOp.close(source, 2);
 		i = ImageOp.open(source, 1);
 		return i;
-
 	}
 
 	public int mean(BufferedImage source)
@@ -288,14 +249,11 @@ public class VisionSystem
 		mean/= (width*height);
 
 		return mean;
-
 	}
 	
 	public int centroid(BufferedImage source)
-	{
-		
-		return 0;
-		
+	{	
+		return 0;		
 	}
 	
 	//needs work
@@ -317,26 +275,20 @@ public class VisionSystem
 				if(r.getSample(j, i, 0)==1)
 				{
 					//breaks because check is wrong
-					if(i>0&&j>0)
-						
+					if(i>0&&j>0)				
 					{
-					if(r.getSample(j-1, i, 0)==0||r.getSample(j+1, i, 0)==0||r.getSample(j, i-1, 0)==0||
+						if(r.getSample(j-1, i, 0)==0||r.getSample(j+1, i, 0)==0||r.getSample(j, i-1, 0)==0||
 							r.getSample(j, i+1, 0)==0||r.getSample(j-1, i+1, 0)==0||r.getSample(j-1, i-1, 0)==0||
 							r.getSample(j+1, i+1, 0)==0||r.getSample(j+1, i-1, 0)==0)
-					{
-					
-					
-					perimeter++;
-					}
+						{										
+							perimeter++;
+						}
 					}
 				}
 			}
 		}
 		
-
-		return perimeter;
-		
-		
+		return perimeter;		
 	}
 	
 	
@@ -361,10 +313,8 @@ public class VisionSystem
 				}
 			}
 		}
-	
 		
-		return area;
-		
+		return area;	
 	}
 
 	public int standardDev(BufferedImage source)
@@ -395,25 +345,19 @@ public class VisionSystem
 				int minus = g-mean;
 				minus= (int) Math.pow(minus,2);
 				sqdif+=minus;
-
-
 			}
 		}
 
 		sqdif/=(width*height);
 
 		return (int) Math.sqrt(sqdif);
-
 	}
 
 
 
 	public BufferedImage performAutomaticThresholding(BufferedImage source)
 	{
-
-
 		return source;
-
 	}
 
 
@@ -431,18 +375,14 @@ public class VisionSystem
 			{
 				arr[i] = 0;
 			}
-
 		}
 
 		return arr;
-
 	}
 
 	public BufferedImage preprocessAnImage(BufferedImage source, int threshold)
 	{
-
 		return thresholdAnImage(source,threshold);
-
 	}
 
 	public BufferedImage thresholdAnImage(BufferedImage source, float threshold)
@@ -456,40 +396,26 @@ public class VisionSystem
 	public BufferedImage readInImage(String filename)
 
 	{
-
 		BufferedImage img;
-
 		img = ImageOp.readInImage(filename);
-
 		return img;
-
 	}
 
 	public void displayAnImage(BufferedImage img, JVision display, int x, int y, String title)
-
 	{
-
 		display.imdisp(img,title,x,y);
-
 	}
 
 	public void createAndDisplayHistogram(BufferedImage img,JVision display,int x,int y,String title) throws Exception
-
 	{
-
 		Histogram hist = new Histogram(img);
-
 		GraphPlot gp = new GraphPlot(hist);
-
 		display.imdisp(gp,title,x,y);
-
 	}
 
 	public short[] brightnessLut(int c)
 	{
-
 		short [] arr = new short[256];
-
 		for(int i=0;i<arr.length;i++)
 		{
 			if(i < -c)
@@ -505,17 +431,11 @@ public class VisionSystem
 				arr[i] = (short) (i + c);
 			}
 		}
-
-
-
 		return arr;
-
 	}
 
 	public short[] linearStretchLut(float m,float c)
-
 	{
-
 		short [] arr = new short[256];
 
 		for(int i=0;i<arr.length;i++)
@@ -533,139 +453,86 @@ public class VisionSystem
 				arr[i] = (short) ((m*i) + c);
 			}
 		}
-
-
 		return arr;
-
 	}
 
 	public BufferedImage enhanceContrast(BufferedImage source, float m, float c)
-
 	{
 		short [] arr = linearStretchLut(m,c);
-
 		BufferedImage enhancedImage = ImageOp.pixelop(source,arr);
-
-
-
 		return enhancedImage;
 	}
 
 
 	public BufferedImage enhanceBrightness(BufferedImage source)
-
 	{
-
-
 		short [] arr = brightnessLut(25);
-
 		BufferedImage enhancedImage = ImageOp.pixelop(source,arr);
-
 		return enhancedImage;
-
-
 	}
 
 	public short[] powerLawLut(float gamma)
 	{
-
 		short [] arr = new short[256];
-
 		for(int i=0;i<arr.length;i++)
 		{
-
 			arr[i] = (short) (Math.pow(i,gamma)/Math.pow(255,gamma-1));
-
 		}
-
-
 		return arr;
-
 	}
 
 
 	//only use this if histogram occupies upper or lower range 
 	public BufferedImage enhanceContrastPower(BufferedImage source)
-
 	{
 		short [] arr = powerLawLut(1f);
-
 		BufferedImage enhancedImage = ImageOp.pixelop(source,arr);
-
-		
 		return enhancedImage;
 	}
 
 
 	public short[] histogramEqualisationLut (Histogram hist) throws HistogramException
 	{
-
-
 		short [] arr = new short[256];
 
 		for(int i=0;i<arr.length;i++)
 		{
-
 			arr[i] = (short) Math.max(0, (short)((256 * hist.getCumulativeFrequency(i)) / (hist.getNumSamples()-1)));
-
 		}
-
-
-		
-
 		return arr;
-
-
 	}
 	
 	public BufferedImage enhanceContrastH(BufferedImage source) throws HistogramException
-
-	{
-		
+	{	
 		Histogram hist = new Histogram(source);
 		short [] arr = histogramEqualisationLut(hist);
-
 		BufferedImage enhancedImage = ImageOp.pixelop(source,arr);
-
 
 		return enhancedImage;
 	}
 
-	
-	
-
 	public BufferedImage performNoiseReduction(BufferedImage source, int maskDimensions)
 	{
 		int dimensions = maskDimensions*maskDimensions;
-
 		float[] LOWPASS= new float[dimensions];
 		
 		for(int i=0;i<LOWPASS.length;i++)
 		{
 			LOWPASS[i] = (float)1/dimensions;
 		}
-		
-
 
 		BufferedImage enhancedImage = ImageOp.convolver(source,LOWPASS);
-
-
 		return enhancedImage;
-
 	}
 
 	public BufferedImage median(BufferedImage source,int m)
 	{
 		BufferedImage enhancedImage = ImageOp.median(source, m);
-
-
 		return enhancedImage;
-
 	}
 
 	public BufferedImage performEdgeExtraction(BufferedImage source)
 	{
-
 		final float[] HIGHPASS1X2 = {-10.f,10.f,
 
 				0.f,0.f};
@@ -675,15 +542,8 @@ public class VisionSystem
 				10.f,0.f};
 
 		BufferedImage enhancedImage = ImageOp.convolver(source,HIGHPASS1X2);
-
 		BufferedImage enhancedImageSecond = ImageOp.convolver(source,HIGHPASS2X1);
-
 		BufferedImage edge = ImageOp.imagrad(enhancedImage, enhancedImageSecond);
-
-
 		return edge;
-
 	}
-
-
 }
