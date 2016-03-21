@@ -1,4 +1,5 @@
 
+import java.awt.Color;
 import java.awt.image.*;
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,6 +10,7 @@ import java.util.Scanner;
 import java.util.Vector;
 
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 
 public class VisionSystem
@@ -22,31 +24,19 @@ public class VisionSystem
 	{
 		try
 		{	
-			Scanner console = new Scanner(System.in);
-			JVision jvis = new JVision();
-			//int intInp = console.nextInt();
 			
-			Scanner br = new Scanner(System.in);
-	        System.out.println("How many classes do you need to train?");
-	        int classCount = 0;
-	        try
-	        {
-	        	classCount = br.nextInt();
-	        }
-	        catch(Exception e) 
-	        {
-	        	System.out.println("Please Enter an integer");
-	        }
-	        br.close();
-
+			JVision jvis = new JVision();
+			
+	        String classCount = JOptionPane.showInputDialog(jvis, "How many classes do you wish to train?");
+	        
 			jvis.setBounds(0, 0, 1500, 1000);
 			jvis.setTitle("Original");
 			Vector<Object> classes = new Vector<Object>();
 			
 			//Get all files in class for training
 			//Loop through this based on user input
-			JFileChooser chooser = new JFileChooser("C:\\Users\\Adam\\Downloads\\Datasets\\test");
-			for(int i = 0; i < classCount; i++)
+			JFileChooser chooser = new JFileChooser("C:\\Users\\40083276\\Desktop\\Datasets");
+			for(int i = 0; i < Integer.valueOf(classCount); i++)
 			{			
 				//open dialog for selecting multiple images
 				//change the path to the directory where your images are stored etc
@@ -144,6 +134,7 @@ public class VisionSystem
 	{
 		Histogram hist = new Histogram(img);
 		GraphPlot gp = new GraphPlot(hist);
+		gp.setColor(Color.BLUE);
 		display.imdisp(gp,title,x,y);
 	}
 }

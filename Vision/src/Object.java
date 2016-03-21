@@ -41,14 +41,8 @@ public class Object {
 	}
 	public void Preprocess()
 	{
-		try
-		{
-			preprocessedImages = IISProcessor.LinearStretching(trainingImages);
-		}
-		catch(HistogramException e)
-		{
-			System.out.print("Uh-Oh!");
-		}
+		preprocessedImages = IISProcessor.PowerLaw(trainingImages,1.5f);
+		preprocessedImages = IISProcessor.EnhanceBrightness(preprocessedImages, 20);
 	}
 	
 	public void Threshold()

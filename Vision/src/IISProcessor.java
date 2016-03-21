@@ -47,10 +47,9 @@ public final class IISProcessor {
 		return LSImages;
 	}
 
-	public static ArrayList<BufferedImage> PowerLaw(ArrayList<BufferedImage> images)
+	public static ArrayList<BufferedImage> PowerLaw(ArrayList<BufferedImage> images, float gamma)
 	{
 		ArrayList<BufferedImage> PLImages = new ArrayList<BufferedImage>();
-		float gamma = 1f;
 		for(BufferedImage img : images)
 		{					
 			short [] arr = new short[256];
