@@ -355,16 +355,17 @@ public final class IISProcessor {
 		return img;
 	}
 
-	public static void displayAll(ArrayList<BufferedImage> images) 
+	public static void displayAll(ArrayList<BufferedImage> images, String displayName) 
 	{
 		JVision jvis = new JVision();
 		jvis.setBounds(0, 0, 1200, 900);
+		int x = 0;
+		int y = 0;
 		for(BufferedImage a : images)
 		{
-			int x = 0;
-			int y = 0;
+			
 			//createAndDisplayHistogram(a.postprocessedImages,jvisClass,x+300,y,"");
-			displayAnImage(a,jvis,x,y,"");
+			displayAnImage(a,jvis,x,y,displayName);
 			x+=250;
 			if(x>=1250)
 			{

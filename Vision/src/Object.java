@@ -13,9 +13,9 @@ public class Object {
 	int [] areaArr;
 	int [] perimArr;
 	
-	public Object(ArrayList<BufferedImage> trainingImages, String className)
+	public Object(ArrayList<BufferedImage> images, String className)
 	{
-		trainingImages = new ArrayList<BufferedImage>();
+		trainingImages = images;
 		areaArr = new int [trainingImages.size()];
 		perimArr = new int [trainingImages.size()];//twice?
 		name = className;
@@ -23,9 +23,21 @@ public class Object {
 		perimeter = 0;
 	}
 	
-	public void displayAll()
+	public void displayAllTraining()
 	{
-		IISProcessor.displayAll(trainingImages);
+		IISProcessor.displayAll(trainingImages, "Training");
+	}
+	public void displayAllPreP()
+	{
+		IISProcessor.displayAll(preprocessedImages, "PreProcessed");
+	}
+	public void displayAllPostP()
+	{
+		IISProcessor.displayAll(postprocessedImages, "PostProcessed");
+	}
+	public void displayAllThreshold()
+	{
+		IISProcessor.displayAll(thresholdedImages, "Thresholded");
 	}
 	public void Preprocess()
 	{

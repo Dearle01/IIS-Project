@@ -26,17 +26,18 @@ public class VisionSystem
 			JVision jvis = new JVision();
 			//int intInp = console.nextInt();
 			
-			BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+			Scanner br = new Scanner(System.in);
 	        System.out.println("How many classes do you need to train?");
 	        int classCount = 0;
 	        try
 	        {
-	        	classCount = br.read();
+	        	classCount = br.nextInt();
 	        }
 	        catch(Exception e) 
 	        {
-	        	System.out.println("Please Enter an interger");
+	        	System.out.println("Please Enter an integer");
 	        }
+	        br.close();
 
 			jvis.setBounds(0, 0, 1500, 1000);
 			jvis.setTitle("Original");
@@ -45,7 +46,7 @@ public class VisionSystem
 			//Get all files in class for training
 			//Loop through this based on user input
 			JFileChooser chooser = new JFileChooser("C:\\Users\\Adam\\Downloads\\Datasets\\test");
-			for(int i = 0; i <= classCount; i++)
+			for(int i = 0; i < classCount; i++)
 			{			
 				//open dialog for selecting multiple images
 				//change the path to the directory where your images are stored etc
@@ -55,30 +56,30 @@ public class VisionSystem
 				File[] files = chooser.getSelectedFiles();
 
 				//loading in the training images
-				ArrayList<BufferedImage> trainingImages = new ArrayList<BufferedImage>();
+				ArrayList<BufferedImage> images = new ArrayList<BufferedImage>();
 				
-				for (int j = 0; j < files.length; i++) {
+				for (int j = 0; j < files.length; j++) {
 					
 					BufferedImage buffImg = readInImage(files[j].getName()); 
-					trainingImages.add(buffImg);
+					images.add(buffImg);
 				}
-				classes.add(new Object(trainingImages, "ss"));	
+				classes.add(new Object(images, "ss"));	
 			}
 			
 			//Will maybe incorporate this to the below loop
 			for(Object a : classes)
 			{
 			 a.Preprocess();
-			 a.displayAll();
+			 a.Threshold();
+			 a.PostProcess();
+			
+			 a.displayAllTraining();
+			 a.displayAllPreP();
+			 a.displayAllPostP();
+			 a.displayAllThreshold();
 			}
-			
-			
-			
-			
-			
-			//System.out.println(calculatePerimeter(postprocessedImages[i]));
-
-			
+	
+			//System.out.println(calculatePerimeter(postprocessedImages[i]));			
 		}
 
 		catch(Exception e)
