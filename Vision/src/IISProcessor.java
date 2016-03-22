@@ -218,14 +218,20 @@ public final class IISProcessor {
 		return mean;
 	}
 
-	public int calculateMagnitudeOfDifference(int testArea, int testPerimeter, int area, int perimeter)
+	public static int[] calculateMagnitudeOfDifference(int testArea, int testPerimeter, int [] areas, int[] perimeters)
 	{
 
-		int magnitude=0;
-		int differenceArea = testArea - area;
-		int differencePerimeter = testPerimeter - perimeter;
-		int sumOfDifferences = (int) ((Math.pow(differenceArea, 2) + (Math.pow(differencePerimeter,2))));
-		magnitude = (int) Math.sqrt(sumOfDifferences);
+		int[] magnitude = new int [areas.length];
+		int[] differenceAreas = new int [areas.length];
+		int[] differencePerimeters = new int [perimeters.length];
+		double [] sumOfDifferences = new double [perimeters.length];
+		for(int i=0;i<magnitude.length;i++)
+		{
+			differenceAreas[i]=testArea - areas[i];
+			differencePerimeters[i]=testPerimeter-perimeters[i];
+			sumOfDifferences[i] =((Math.pow(differenceAreas[i], 2) + (Math.pow(differencePerimeters[i],2))));
+			magnitude[i] = (int) Math.sqrt(sumOfDifferences[i]);
+		}
 
 		return magnitude;
 
@@ -233,31 +239,34 @@ public final class IISProcessor {
 
 	//This isnt finished
 	//Need to send in the image, but accesed through main?
-	public void nearestNeighbourCalc(BufferedImage source, int [] areaArray, int [] perimeterArray, BufferedImage [] imgs) throws IOException
+	public static void nearestNeighbourCalc(BufferedImage source, ArrayList <BufferedImage> imgs) throws IOException
 	{
 		//array containing area values for each other binary image
-		int [] v1d = new int [perimeterArray.length];
-		int [] v2d = new int [areaArray.length];
+		int [] v1d = new int [imgs.size()];
+		int [] v2d = new int [imgs.size()];
 		//get area of image passed in to calculate nearest neighbours
 		ArrayList<BufferedImage> sourceImage = new ArrayList<BufferedImage>();
 		Collections.addAll(sourceImage, source);
-		int[] v1t = calculatePerimeter(sourceImage);
+		int[] v1t = getPerimeter(sourceImage);
 		int[] v2t = area(sourceImage);
+		int [] perimeters = new int [imgs.size()];
+		perimeters=getPerimeter(imgs);
+		int [] areas = new int [imgs.size()];
+		areas=area(imgs);
+		
 
-		//		for(int i=0;i<areaArray.length;i++)
-		//		{	
-		//			v1d[i] = v1t-perimeterArray[i];
-		//			v2d[i] = v2t-areaArray[i];
-		//		}
+				for(int i=0;i<imgs.size();i++)
+				{	
+					v1d[i] = v1t[0]-perimeters[i];
+					v2d[i] = v2t[0]-areas[i];
+				}
 
 
 
-		int [] vd = new int [areaArray.length];
+		int [] vd = new int [imgs.size()];
 
-		for(int i=0;i<vd.length;i++)
-		{
-			//vd[i]=calculateMagnitudeOfDifference(v2t, v1t, v2d[i], v1d[i]);
-		}
+		vd=calculateMagnitudeOfDifference(v2t[0], v1t[0], v2d, v1d);
+		
 
 		//select three closest images in terms of area
 
@@ -293,20 +302,20 @@ public final class IISProcessor {
 //				imgCounter++;
 //			}
 //		}
-
-		JVision j = new JVision();
-		j.setBounds(0, 0, 1500, 1000);
-
-		int x =0;
-		int y = 0;	
-
-		for(int i=0;i<nnImages.length;i++)
-		{
-			displayAnImage(nnImages[i], j, x, y, "");
-			x+=250;
-		}
-
-		displayAnImage(source,j,0,500,"original");	
+//
+//		JVision j = new JVision();
+//		j.setBounds(0, 0, 1500, 1000);
+//
+//		int x =0;
+//		int y = 0;	
+//
+//		for(int i=0;i<nnImages.length;i++)
+//		{
+//			displayAnImage(nnImages[i], j, x, y, "");
+//			x+=250;
+//		}
+//
+//		displayAnImage(source,j,0,500,"original");	
 	}
 
 	public static int standardDev(BufferedImage source)
@@ -350,7 +359,7 @@ public final class IISProcessor {
 		ArrayList<BufferedImage> postPImages = new ArrayList<BufferedImage>();
 		for(BufferedImage img : images)
 		{
-			BufferedImage i = ImageOp.close(img, 2);
+			BufferedImage i = ImageOp.dilate(img, 2);
 			i = ImageOp.open(img, 1);
 			postPImages.add(i);
 		}
@@ -373,25 +382,38 @@ public final class IISProcessor {
 			{
 				for(int j=0;j<height;j++)
 				{
-					if(r.getSample(j, i, 0)>0)
+					if(r.getSample(i, j, 0)>0)
 					{
 						area++;
 					}
 				}
 			}			
-			areaArr[k]=area;
+			areaArr[k]=(width*height)-area;
 		}
 		return areaArr;	
 	}
+	
+	
 
 	public static int[] getPerimeter(ArrayList<BufferedImage> images)
 	{
 		ArrayList<BufferedImage> reducedImages = new ArrayList<BufferedImage>();
+		
+		JVision j = new JVision();
+		
+		j.setTitle("WHAT IS GOING ON HERE");
+		
 		for(BufferedImage img : images)
 		{
-			BufferedImage i = ImageOp.erode(img, 2);//1 doesnt work, so 2?
+			BufferedImage i = ImageOp.dilate(img, 2);//1 doesnt work, so 2? // dont't even ask
 			reducedImages.add(i);
+			displayAnImage(i, j, 0, 0, "");
 		}
+		
+		displayAnImage(images.get(0), j, 400, 0, "");
+		
+		
+		
 		int imageCount = images.size();
 		int[] perArr = new int[imageCount];
 		
@@ -406,60 +428,19 @@ public final class IISProcessor {
 		return perArr;
 	}
 	
-	public int[] calculatePerimeter(ArrayList<BufferedImage> images) throws IOException
-	{
-		//A pixel is part of the perimeter if it is nonzero and it is connected to at least one zero-valued pixel.
-		int[] perArr = new int[images.size()];
-		for(int k=0;k<images.size();k++)
+	public static float[] getCompactness(ArrayList<BufferedImage> images)
+	{	
+		float [] compactnessValues = new float[images.size()];
+		int [] perimeters = new int [images.size()];
+		perimeters=getPerimeter(images);
+		int [] areas = new int [images.size()];
+		areas=area(images);
+		for(int i=0;i<compactnessValues.length;i++)
 		{
-
-			int width = images.get(k).getWidth();
-			int height = images.get(k).getHeight();
-			int [][] perimeterDraw = new int [width][height]; 
-			Raster r = images.get(k).getRaster();
-			width= r.getHeight();
-			height= r.getWidth();
-			int perimeter=0;
-			BufferedWriter out = new BufferedWriter(new FileWriter("file.txt"));
-
-			for(int i=1;i<width;i++)
-			{
-				for(int j=1;j<height;j++)
-				{
-					if(r.getSample(j, i, 0)==1)
-					{
-						//breaks because check is wrong
-						if(i>0&&j>0&&i<width&&j<height)				
-						{
-							if(r.getSample(j-1, i, 0)==0||r.getSample(j+1, i, 0)==0||r.getSample(j, i-1, 0)==0||
-									r.getSample(j, i+1, 0)==0||r.getSample(j-1, i+1, 0)==0||r.getSample(j-1, i-1, 0)==0||
-									r.getSample(j+1, i+1, 0)==0||r.getSample(j+1, i-1, 0)==0)
-							{										
-								perimeter++;
-								perimeterDraw[i][j]=1;
-							}
-						}
-					}
-					else
-					{
-						perimeterDraw[i][j]=0;
-					}
-				}
-			}
-			perArr[k] = perimeter;
-
-			for(int i=0;i<width;i++)
-			{
-				for(int j=0;j<height;j++)
-				{
-					out.write(""+perimeterDraw[i][j]);
-
-				}
-				out.newLine();
-			}
-			out.close();
+			compactnessValues[i]=(float) (Math.pow(perimeters[i],2)/areas[i]);
 		}
-		return perArr;
+		
+		return compactnessValues;
 	}
 
 	public static BufferedImage readInImage(String filename)
@@ -514,4 +495,26 @@ public final class IISProcessor {
 	{
 		display.imdisp(img,title,x,y);
 	}
+	
+	public static void printAreas(ArrayList<BufferedImage> imgs) throws IOException
+	{
+		for(int i:area(imgs))
+		{
+			System.out.println("This is the area "+i);
+		}
+		
+		for(int i:getPerimeter(imgs))
+		{
+			System.out.println("This is Dearle's perimeter"+i);
+		}
+		
+		for(float f:getCompactness(imgs))
+		{
+			System.out.println("this is the compactness"+f);
+		}
+		
+		
+	}
+	
+	
 }

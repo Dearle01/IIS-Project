@@ -1,0 +1,509 @@
+import java.awt.image.BufferedImage;
+import java.awt.image.Raster;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+
+public final class IISProcessor {
+	private IISProcessor()
+	{
+		//Cannot be called
+		//Need to mimic a top level static class.
+	}
+
+	public static ArrayList<BufferedImage> LinearStretching(ArrayList<BufferedImage> trainingImages) throws HistogramException
+	{
+		ArrayList<BufferedImage> LSImages = new ArrayList<BufferedImage>();
+		for(BufferedImage img : trainingImages)
+		{		
+			Histogram h = new Histogram(img);
+
+			//calculating m and c values for linear stretching 
+			float hmax = h.getMaxValue();
+			float hmin = h.getMinValue();
+			float m = 255/(hmax - hmin);
+			float c = (-1*m)*hmin;			
+
+			short [] arr = new short[256];
+			for(int i=0;i<arr.length;i++)
+			{
+				if(i < (-c/m))
+				{
+					arr[i] = 0;
+				}
+				else if(i > ((255-c)/m))
+				{
+					arr[i] = 255;
+				}
+				else
+				{
+					arr[i] = (short) ((m*i) + c);
+				}
+			}
+			LSImages.add(ImageOp.pixelop(img ,arr));	
+		}
+		return LSImages;
+	}
+
+	public static ArrayList<BufferedImage> PowerLaw(ArrayList<BufferedImage> images, float gamma)
+	{
+		ArrayList<BufferedImage> PLImages = new ArrayList<BufferedImage>();
+		for(BufferedImage img : images)
+		{					
+			short [] arr = new short[256];
+			for(int i=0;i<arr.length;i++)
+			{
+				arr[i] = (short) (Math.pow(i,gamma)/Math.pow(255,gamma-1));
+			}
+
+			PLImages.add(ImageOp.pixelop(img,arr));	
+		}
+		return PLImages;
+	}
+
+	public static ArrayList<BufferedImage> HistogramEqualisation(ArrayList<BufferedImage> images) throws HistogramException
+	{
+		ArrayList<BufferedImage> HistImages = new ArrayList<BufferedImage>();
+		float gamma = 1f;
+		for(BufferedImage img : images)
+		{			
+			Histogram hist = new Histogram(img);
+			short [] arr = new short[256];
+			for(int i=0;i<arr.length;i++)
+			{
+				arr[i] = (short) Math.max(0, (short)((256 * hist.getCumulativeFrequency(i)) / (hist.getNumSamples()-1)));
+			}
+
+			HistImages.add(ImageOp.pixelop(img,arr));	
+		}
+		return HistImages;
+	}
+
+	public static ArrayList<BufferedImage> EdgeExtraction(ArrayList<BufferedImage> images) throws HistogramException
+	{
+		ArrayList<BufferedImage> edgeImages = new ArrayList<BufferedImage>();
+		for(BufferedImage img : images)
+		{			
+			final float[] HIGHPASS1X2 = {-10.f,10.f,
+
+					0.f,0.f};
+
+			final float[] HIGHPASS2X1 = {-10.f,0.f,
+
+					10.f,0.f};
+
+			BufferedImage enhancedImage = ImageOp.convolver(img,HIGHPASS1X2);
+			BufferedImage enhancedImageSecond = ImageOp.convolver(img,HIGHPASS2X1);
+			BufferedImage edge = ImageOp.imagrad(enhancedImage, enhancedImageSecond);
+			edgeImages.add(edge);
+		}
+		return edgeImages;
+	}
+
+	public static BufferedImage LowPassFilter(BufferedImage source, int maskDimensions)
+	{
+		int dimensions = maskDimensions*maskDimensions;
+		float[] LOWPASS= new float[dimensions];	
+		for(int i=0;i<LOWPASS.length;i++)
+		{
+			LOWPASS[i] = (float)1/dimensions;
+		}
+
+		BufferedImage enhancedImage = ImageOp.convolver(source,LOWPASS);
+		return enhancedImage;
+	}
+
+
+	public static ArrayList<BufferedImage> Median(ArrayList<BufferedImage> images, int m)
+	{
+		ArrayList<BufferedImage> medianImages = new ArrayList<BufferedImage>();
+		for(BufferedImage img : images)
+		{			
+			medianImages.add(ImageOp.median(img, m));
+		}
+		return medianImages;
+	}	
+
+	public static ArrayList<BufferedImage> performNoiseReduction(ArrayList<BufferedImage> images, int maskDimensions)
+	{
+		ArrayList<BufferedImage> noiseRedImages = new ArrayList<BufferedImage>();
+		for(BufferedImage img : images)
+		{
+			int dimensions = maskDimensions*maskDimensions;
+			float[] LOWPASS= new float[dimensions];
+
+			for(int i=0;i<LOWPASS.length;i++)
+			{
+				LOWPASS[i] = (float)1/dimensions;
+			}
+
+			noiseRedImages.add(ImageOp.convolver(img,LOWPASS));
+		}
+		return noiseRedImages;
+	}
+
+	public static ArrayList<BufferedImage> EnhanceBrightness(ArrayList<BufferedImage> images, int c)
+	{
+		ArrayList<BufferedImage> brightnessImages = new ArrayList<BufferedImage>();
+		for(BufferedImage img : images)
+		{
+			short [] arr = new short[256];
+			for(int i=0;i<arr.length;i++)
+			{
+				if(i < -c)
+				{
+					arr[i] = 0;
+				}
+				else if(i > (255-c))
+				{
+					arr[i] = 255;
+				}
+				else
+				{
+					arr[i] = (short) (i + c);
+				}
+			}
+
+			brightnessImages.add(ImageOp.pixelop(img,arr));
+		}
+		return brightnessImages;
+	}
+
+	//automatic thresholding assumes a bimodal histogram, will look into alternative solution
+	public static ArrayList<BufferedImage> ThresholdImages(ArrayList<BufferedImage> images)throws HistogramException
+	{
+		ArrayList<BufferedImage> LSImages = new ArrayList<BufferedImage>();
+		for(BufferedImage img : images)
+		{		
+			float threshold = (float) (mean(img) + 0.5  * standardDev(img));		
+
+			short [] arr = new short[256];
+
+			for(int i=0;i<arr.length;i++)
+			{
+				if(i <= threshold)
+				{
+					arr[i] = 255;
+				}
+				else
+				{
+					arr[i] = 0;
+				}
+			}
+			LSImages.add(ImageOp.pixelop(img ,arr));	
+		}
+		return LSImages;
+	}
+
+	private static int mean(BufferedImage source)
+	{
+		int width = source.getWidth();
+		int height = source.getHeight();
+		Raster rast = source.getRaster();
+		int mean = 0;
+		for(int i=0;i<width;i++)
+		{
+			for(int j=0;j<height;j++)
+			{
+				int g = rast.getSample(j,i,0);
+				mean +=g;
+			}
+		}
+
+		mean/= (width*height);
+
+		return mean;
+	}
+
+	public int calculateMagnitudeOfDifference(int testArea, int testPerimeter, int area, int perimeter)
+	{
+
+		int magnitude=0;
+		int differenceArea = testArea - area;
+		int differencePerimeter = testPerimeter - perimeter;
+		int sumOfDifferences = (int) ((Math.pow(differenceArea, 2) + (Math.pow(differencePerimeter,2))));
+		magnitude = (int) Math.sqrt(sumOfDifferences);
+
+		return magnitude;
+
+	}
+
+	//This isnt finished
+	//Need to send in the image, but accesed through main?
+	public void nearestNeighbourCalc(BufferedImage source, int [] areaArray, int [] perimeterArray, BufferedImage [] imgs) throws IOException
+	{
+		//array containing area values for each other binary image
+		int [] v1d = new int [perimeterArray.length];
+		int [] v2d = new int [areaArray.length];
+		//get area of image passed in to calculate nearest neighbours
+		ArrayList<BufferedImage> sourceImage = new ArrayList<BufferedImage>();
+		Collections.addAll(sourceImage, source);
+		int[] v1t = calculatePerimeter(sourceImage);
+		int[] v2t = area(sourceImage);
+
+		//		for(int i=0;i<areaArray.length;i++)
+		//		{	
+		//			v1d[i] = v1t-perimeterArray[i];
+		//			v2d[i] = v2t-areaArray[i];
+		//		}
+
+
+
+		int [] vd = new int [areaArray.length];
+
+		for(int i=0;i<vd.length;i++)
+		{
+			//vd[i]=calculateMagnitudeOfDifference(v2t, v1t, v2d[i], v1d[i]);
+		}
+
+		//select three closest images in terms of area
+
+
+		Arrays.sort(vd);
+
+		int first = 0;
+		int second = 0;
+		int third = 0;
+
+		if(vd.length>=3)
+		{
+			//three smallest
+			first = vd[0];
+			second = vd[1];
+			third = vd[2];
+		}
+
+		System.out.println("First"+first);
+		System.out.println("Second"+second);
+		System.out.println("Third"+third);
+
+		BufferedImage [] nnImages = new BufferedImage [3];
+		int imgCounter=0;
+
+//		for(int i=0;i<imgs.length;i++)
+//		{
+//			if(calculateMagnitudeOfDifference(area(source), calculatePerimeter(source), area(imgs[i]),calculatePerimeter(imgs[i]))==first||
+//					calculateMagnitudeOfDifference(area(source), calculatePerimeter(source), area(imgs[i]),calculatePerimeter(imgs[i]))==second||
+//					calculateMagnitudeOfDifference(area(source), calculatePerimeter(source), area(imgs[i]),calculatePerimeter(imgs[i]))==third)
+//			{
+//				nnImages[imgCounter] = imgs[i];
+//				imgCounter++;
+//			}
+//		}
+
+		JVision j = new JVision();
+		j.setBounds(0, 0, 1500, 1000);
+
+		int x =0;
+		int y = 0;	
+
+		for(int i=0;i<nnImages.length;i++)
+		{
+			displayAnImage(nnImages[i], j, x, y, "");
+			x+=250;
+		}
+
+		displayAnImage(source,j,0,500,"original");	
+	}
+
+	public static int standardDev(BufferedImage source)
+	{
+		int width = source.getWidth();
+		int height = source.getHeight();
+		Raster rast = source.getRaster();
+		int mean = 0;
+		for(int i=0;i<width;i++)
+		{
+			for(int j=0;j<height;j++)
+			{
+				int g = rast.getSample(j,i,0);
+				mean +=g;
+			}
+		}
+
+		mean/= (width*height);
+
+		int sqdif =0;
+
+		for(int i=0;i<width;i++)
+		{
+			for(int j=0;j<height;j++)
+			{
+
+				int g = rast.getSample(j,i,0);
+				int minus = g-mean;
+				minus= (int) Math.pow(minus,2);
+				sqdif+=minus;
+			}
+		}
+
+		sqdif/=(width*height);
+
+		return (int) Math.sqrt(sqdif);
+	}
+
+	public static ArrayList<BufferedImage> PostProcessImages(ArrayList<BufferedImage> images)
+	{
+		ArrayList<BufferedImage> postPImages = new ArrayList<BufferedImage>();
+		for(BufferedImage img : images)
+		{
+			BufferedImage i = ImageOp.close(img, 2);
+			i = ImageOp.open(img, 1);
+			postPImages.add(i);
+		}
+		return postPImages;
+	}
+
+	public static int[] area(ArrayList<BufferedImage> source)
+	{
+		int [] areaArr = new int[source.size()];
+		for(int k=0;k<source.size();k++)
+		{
+			int width = source.get(k).getWidth();
+			int height = source.get(k).getHeight();
+			Raster r = source.get(k).getRaster();
+			width= r.getHeight();
+			height= r.getWidth();
+			int area=0;
+
+			for(int i=0;i<width;i++)
+			{
+				for(int j=0;j<height;j++)
+				{
+					if(r.getSample(i, j, 0)>0)
+					{
+						area++;
+					}
+				}
+			}			
+			areaArr[k]=(width*height)-area;
+		}
+		return areaArr;	
+	}
+	
+	
+
+	public static int[] getPerimeter(ArrayList<BufferedImage> images)
+	{
+		ArrayList<BufferedImage> reducedImages = new ArrayList<BufferedImage>();
+		
+		JVision j = new JVision();
+		
+		j.setTitle("WHAT IS GOING ON HERE");
+		
+		for(BufferedImage img : images)
+		{
+			BufferedImage i = ImageOp.dilate(img, 2);//1 doesnt work, so 2? // dont't even ask
+			reducedImages.add(i);
+			displayAnImage(i, j, 0, 0, "");
+		}
+		
+		displayAnImage(images.get(0), j, 400, 0, "");
+		
+		
+		
+		int imageCount = images.size();
+		int[] perArr = new int[imageCount];
+		
+		int[] areaReduced = area(reducedImages);
+		int[] areaNormal = area(images);
+		
+		//Go through each image and get the difference between the image and its closed self.
+		for(int i=0; i < imageCount; i++)
+		{
+			perArr[i] = areaNormal[i] - areaReduced[i];
+		}
+		return perArr;
+	}
+	
+	public static float[] getCompactness(ArrayList<BufferedImage> images)
+	{	
+		float [] compactnessValues = new float[images.size()];
+		int [] perimeters = new int [images.size()];
+		perimeters=getPerimeter(images);
+		int [] areas = new int [images.size()];
+		areas=area(images);
+		for(int i=0;i<compactnessValues.length;i++)
+		{
+			compactnessValues[i]=(float) (Math.pow(perimeters[i],2)/areas[i]);
+		}
+		
+		return compactnessValues;
+	}
+
+	public static BufferedImage readInImage(String filename)
+
+	{
+		BufferedImage img;
+		img = ImageOp.readInImage(filename);
+		return img;
+	}
+
+	public static void displayAll(ArrayList<BufferedImage> images, String displayName) 
+	{
+		JVision jvis = new JVision();
+		jvis.setBounds(0, 0, 1200, 900);
+		int x = 0;
+		int y = 0;
+		for(BufferedImage a : images)
+		{
+
+			//createAndDisplayHistogram(a.postprocessedImages,jvisClass,x+300,y,"");
+			displayAnImage(a,jvis,x,y,displayName);
+			x+=250;
+			if(x>=1250)
+			{
+				x=0;
+				y+=250;		
+			}
+		}
+	}
+	
+	public static void displayAllHistogram(ArrayList<BufferedImage> images, String displayName) throws HistogramException
+	{
+		JVision jvis = new JVision();
+		jvis.setBounds(0, 0, 1200, 900);
+		int x = 0;
+		int y = 0;
+		for(BufferedImage a : images)
+		{
+			Histogram hist = new Histogram(a);
+			GraphPlot gp = new GraphPlot(hist);
+			//createAndDisplayHistogram(a.postprocessedImages,jvisClass,x+300,y,"");
+			displayAnImage(gp,jvis,x,y,displayName);
+			x+=290;
+			if(x>=1250)
+			{
+				x=0;
+				y+=290;		
+			}
+		}
+	}
+	public static void displayAnImage(BufferedImage img, JVision display, int x, int y, String title)
+	{
+		display.imdisp(img,title,x,y);
+	}
+	
+	public static void printAreas(ArrayList<BufferedImage> imgs) throws IOException
+	{
+		for(int i:area(imgs))
+		{
+			System.out.println("This is the area "+i);
+		}
+		
+		for(int i:getPerimeter(imgs))
+		{
+			System.out.println("This is Dearle's perimeter"+i);
+		}
+		
+		for(float f:getCompactness(imgs))
+		{
+			System.out.println("this is the compactness"+f);
+		}
+	}
+	
+	
+}

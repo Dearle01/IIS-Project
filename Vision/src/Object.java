@@ -1,4 +1,5 @@
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class Object {
@@ -75,9 +76,11 @@ public class Object {
 		}
 	}
 	
-	public void PostProcess()
+	public void PostProcess() throws IOException
 	{
 			postprocessedImages = IISProcessor.PostProcessImages(thresholdedImages);
+			IISProcessor.printAreas(postprocessedImages);
+			IISProcessor.nearestNeighbourCalc(postprocessedImages.get(0), postprocessedImages);
 	}
 	
 	
