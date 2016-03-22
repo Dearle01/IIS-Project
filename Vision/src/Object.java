@@ -10,8 +10,8 @@ public class Object {
 	public int area, perimeter;
 	
 	public String name;
-	int [] areaArr;
-	int [] perimArr;
+	public int [] areaArr;
+	public int [] perimArr;
 	
 	public Object(ArrayList<BufferedImage> images, String className)
 	{
@@ -39,6 +39,12 @@ public class Object {
 	{
 		IISProcessor.displayAll(thresholdedImages, "Thresholded "  + name);
 	}
+	
+	//Get the area and perimeter for all of the images
+	public void Classify()
+	{
+		perimArr = IISProcessor.getPerimeter(thresholdedImages);
+	}
 	public void displayAllHistogram()
 	{
 		try
@@ -61,7 +67,7 @@ public class Object {
 	{
 		try
 		{
-			thresholdedImages = IISProcessor.ThresholdImages(preprocessedImages);
+			thresholdedImages = IISProcessor.ThresholdImages(trainingImages);
 		}
 		catch(HistogramException e)
 		{

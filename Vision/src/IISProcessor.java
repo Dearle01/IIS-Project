@@ -178,7 +178,7 @@ public final class IISProcessor {
 		ArrayList<BufferedImage> LSImages = new ArrayList<BufferedImage>();
 		for(BufferedImage img : images)
 		{		
-			float threshold = (float) (mean(img) + 0.01  * standardDev(img));		
+			float threshold = (float) (mean(img) + 0.5  * standardDev(img));		
 
 			short [] arr = new short[256];
 
@@ -373,19 +373,39 @@ public final class IISProcessor {
 			{
 				for(int j=0;j<height;j++)
 				{
-					if(r.getSample(j, i, 0)==1)
+					if(r.getSample(j, i, 0)>0)
 					{
 						area++;
 					}
 				}
-			}
-			
+			}			
 			areaArr[k]=area;
 		}
-
 		return areaArr;	
 	}
 
+	public static int[] getPerimeter(ArrayList<BufferedImage> images)
+	{
+		ArrayList<BufferedImage> reducedImages = new ArrayList<BufferedImage>();
+		for(BufferedImage img : images)
+		{
+			BufferedImage i = ImageOp.erode(img, 2);//1 doesnt work, so 2?
+			reducedImages.add(i);
+		}
+		int imageCount = images.size();
+		int[] perArr = new int[imageCount];
+		
+		int[] areaReduced = area(reducedImages);
+		int[] areaNormal = area(images);
+		
+		//Go through each image and get the difference between the image and its closed self.
+		for(int i=0; i < imageCount; i++)
+		{
+			perArr[i] = areaNormal[i] - areaReduced[i];
+		}
+		return perArr;
+	}
+	
 	public int[] calculatePerimeter(ArrayList<BufferedImage> images) throws IOException
 	{
 		//A pixel is part of the perimeter if it is nonzero and it is connected to at least one zero-valued pixel.
@@ -401,8 +421,6 @@ public final class IISProcessor {
 			height= r.getWidth();
 			int perimeter=0;
 			BufferedWriter out = new BufferedWriter(new FileWriter("file.txt"));
-
-
 
 			for(int i=1;i<width;i++)
 			{
@@ -421,36 +439,27 @@ public final class IISProcessor {
 								perimeterDraw[i][j]=1;
 							}
 						}
-
 					}
 					else
 					{
 						perimeterDraw[i][j]=0;
 					}
-
 				}
 			}
-
 			perArr[k] = perimeter;
-
 
 			for(int i=0;i<width;i++)
 			{
 				for(int j=0;j<height;j++)
 				{
-
 					out.write(""+perimeterDraw[i][j]);
 
 				}
 				out.newLine();
 			}
-
 			out.close();
-
 		}
-
 		return perArr;
-
 	}
 
 	public static BufferedImage readInImage(String filename)
@@ -493,11 +502,11 @@ public final class IISProcessor {
 			GraphPlot gp = new GraphPlot(hist);
 			//createAndDisplayHistogram(a.postprocessedImages,jvisClass,x+300,y,"");
 			displayAnImage(gp,jvis,x,y,displayName);
-			x+=250;
+			x+=290;
 			if(x>=1250)
 			{
 				x=0;
-				y+=250;		
+				y+=290;		
 			}
 		}
 	}
