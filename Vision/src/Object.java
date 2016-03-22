@@ -25,19 +25,31 @@ public class Object {
 	
 	public void displayAllTraining()
 	{
-		IISProcessor.displayAll(trainingImages, "Training");
+		IISProcessor.displayAll(trainingImages, "Training for " + name);
 	}
 	public void displayAllPreP()
 	{
-		IISProcessor.displayAll(preprocessedImages, "PreProcessed");
+		IISProcessor.displayAll(preprocessedImages, "PreProcessed " + name);
 	}
 	public void displayAllPostP()
 	{
-		IISProcessor.displayAll(postprocessedImages, "PostProcessed");
+		IISProcessor.displayAll(postprocessedImages, "PostProcessed " + name);
 	}
 	public void displayAllThreshold()
 	{
-		IISProcessor.displayAll(thresholdedImages, "Thresholded");
+		IISProcessor.displayAll(thresholdedImages, "Thresholded "  + name);
+	}
+	public void displayAllHistogram()
+	{
+		try
+		{
+			IISProcessor.displayAllHistogram(trainingImages, "Histograms for original "  + name);
+		}
+		catch(HistogramException e)
+		{
+			System.out.print("Error printing histogram");
+		}
+		
 	}
 	public void Preprocess()
 	{

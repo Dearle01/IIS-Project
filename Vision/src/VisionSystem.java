@@ -1,12 +1,8 @@
 
 import java.awt.Color;
 import java.awt.image.*;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Scanner;
 import java.util.Vector;
 
 import javax.swing.JFileChooser;
@@ -24,7 +20,6 @@ public class VisionSystem
 	{
 		try
 		{	
-			
 			JVision jvis = new JVision();
 			
 	        String classCount = JOptionPane.showInputDialog(jvis, "How many classes do you wish to train?");
@@ -35,7 +30,7 @@ public class VisionSystem
 			
 			//Get all files in class for training
 			//Loop through this based on user input
-			JFileChooser chooser = new JFileChooser("C:\\Users\\40083276\\Desktop\\Datasets");
+			JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
 			for(int i = 0; i < Integer.valueOf(classCount); i++)
 			{			
 				//open dialog for selecting multiple images
@@ -53,7 +48,8 @@ public class VisionSystem
 					BufferedImage buffImg = readInImage(files[j].getName()); 
 					images.add(buffImg);
 				}
-				classes.add(new Object(images, "ss"));	
+				String objectName = JOptionPane.showInputDialog(jvis, "What is the name of this object?");
+				classes.add(new Object(images, objectName));	
 			}
 			
 			//Will maybe incorporate this to the below loop
@@ -64,9 +60,10 @@ public class VisionSystem
 			 a.PostProcess();
 			
 			 a.displayAllTraining();
-			 a.displayAllPreP();
-			 a.displayAllPostP();
-			 a.displayAllThreshold();
+			 //a.displayAllPreP();
+			 //a.displayAllPostP();
+			 //a.displayAllThreshold();
+			 a.displayAllHistogram();
 			}
 	
 			//System.out.println(calculatePerimeter(postprocessedImages[i]));			

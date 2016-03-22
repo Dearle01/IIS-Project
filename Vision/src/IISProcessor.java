@@ -178,8 +178,6 @@ public final class IISProcessor {
 		ArrayList<BufferedImage> LSImages = new ArrayList<BufferedImage>();
 		for(BufferedImage img : images)
 		{		
-			Histogram h = new Histogram(img);
-
 			float threshold = (float) (mean(img) + 0.01  * standardDev(img));		
 
 			short [] arr = new short[256];
@@ -195,7 +193,6 @@ public final class IISProcessor {
 					arr[i] = 0;
 				}
 			}
-
 			LSImages.add(ImageOp.pixelop(img ,arr));	
 		}
 		return LSImages;
@@ -475,6 +472,27 @@ public final class IISProcessor {
 
 			//createAndDisplayHistogram(a.postprocessedImages,jvisClass,x+300,y,"");
 			displayAnImage(a,jvis,x,y,displayName);
+			x+=250;
+			if(x>=1250)
+			{
+				x=0;
+				y+=250;		
+			}
+		}
+	}
+	
+	public static void displayAllHistogram(ArrayList<BufferedImage> images, String displayName) throws HistogramException
+	{
+		JVision jvis = new JVision();
+		jvis.setBounds(0, 0, 1200, 900);
+		int x = 0;
+		int y = 0;
+		for(BufferedImage a : images)
+		{
+			Histogram hist = new Histogram(a);
+			GraphPlot gp = new GraphPlot(hist);
+			//createAndDisplayHistogram(a.postprocessedImages,jvisClass,x+300,y,"");
+			displayAnImage(gp,jvis,x,y,displayName);
 			x+=250;
 			if(x>=1250)
 			{
