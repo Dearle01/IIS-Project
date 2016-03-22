@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 
 public final class IISProcessor {
 	private IISProcessor()
@@ -219,95 +220,97 @@ public final class IISProcessor {
 
 		return mean;
 	}
-	
+
 	public int calculateMagnitudeOfDifference(int testArea, int testPerimeter, int area, int perimeter)
 	{
-		
+
 		int magnitude=0;
 		int differenceArea = testArea - area;
 		int differencePerimeter = testPerimeter - perimeter;
 		int sumOfDifferences = (int) ((Math.pow(differenceArea, 2) + (Math.pow(differencePerimeter,2))));
 		magnitude = (int) Math.sqrt(sumOfDifferences);
-		
+
 		return magnitude;
-		
+
 	}
 
 	//This isnt finished
 	//Need to send in the image, but accesed through main?
-//	public void nearestNeighbourCalc(BufferedImage source, int [] areaArray, int [] perimeterArray, BufferedImage [] imgs) throws IOException
-//	{
-//		//array containing area values for each other binary image
-//		int [] v1d = new int [perimeterArray.length];
-//		int [] v2d = new int [areaArray.length];
-//		//get area of image passed in to calculate nearest neighbours
-//		int v1t = calculatePerimeter(source);
-//		int v2t = area(source);
-//		
-//		for(int i=0;i<areaArray.length;i++)
-//		{	
-//			v1d[i] = v1t-perimeterArray[i];
-//			v2d[i] = v2t-areaArray[i];
-//		}
-//		
-//		
-//		
-//		int [] vd = new int [areaArray.length];
-//		
-//		for(int i=0;i<vd.length;i++)
-//		{
-//			vd[i]=calculateMagnitudeOfDifference(v2t, v1t, v2d[i], v1d[i]);
-//		}
-//		
-//		//select three closest images in terms of area
-//		
-//		
-//		Arrays.sort(vd);
-//		
-//		int first = 0;
-//		int second = 0;
-//		int third = 0;
-//		
-//		if(vd.length>=3)
-//		{
-//		//three smallest
-//		first = vd[0];
-//		second = vd[1];
-//		third = vd[2];
-//		}
-//		
-//		System.out.println("First"+first);
-//		System.out.println("Second"+second);
-//		System.out.println("Third"+third);
-//		
-//		BufferedImage [] nnImages = new BufferedImage [3];
-//		int imgCounter=0;
-		
+	public void nearestNeighbourCalc(BufferedImage source, int [] areaArray, int [] perimeterArray, BufferedImage [] imgs) throws IOException
+	{
+		//array containing area values for each other binary image
+		int [] v1d = new int [perimeterArray.length];
+		int [] v2d = new int [areaArray.length];
+		//get area of image passed in to calculate nearest neighbours
+		ArrayList<BufferedImage> sourceImage = new ArrayList<BufferedImage>();
+		Collections.addAll(sourceImage, source);
+		int[] v1t = calculatePerimeter(sourceImage);
+		int[] v2t = area(sourceImage);
+
+		//		for(int i=0;i<areaArray.length;i++)
+		//		{	
+		//			v1d[i] = v1t-perimeterArray[i];
+		//			v2d[i] = v2t-areaArray[i];
+		//		}
+
+
+
+		int [] vd = new int [areaArray.length];
+
+		for(int i=0;i<vd.length;i++)
+		{
+			//vd[i]=calculateMagnitudeOfDifference(v2t, v1t, v2d[i], v1d[i]);
+		}
+
+		//select three closest images in terms of area
+
+
+		Arrays.sort(vd);
+
+		int first = 0;
+		int second = 0;
+		int third = 0;
+
+		if(vd.length>=3)
+		{
+			//three smallest
+			first = vd[0];
+			second = vd[1];
+			third = vd[2];
+		}
+
+		System.out.println("First"+first);
+		System.out.println("Second"+second);
+		System.out.println("Third"+third);
+
+		BufferedImage [] nnImages = new BufferedImage [3];
+		int imgCounter=0;
+
 //		for(int i=0;i<imgs.length;i++)
 //		{
 //			if(calculateMagnitudeOfDifference(area(source), calculatePerimeter(source), area(imgs[i]),calculatePerimeter(imgs[i]))==first||
 //					calculateMagnitudeOfDifference(area(source), calculatePerimeter(source), area(imgs[i]),calculatePerimeter(imgs[i]))==second||
-//							calculateMagnitudeOfDifference(area(source), calculatePerimeter(source), area(imgs[i]),calculatePerimeter(imgs[i]))==third)
+//					calculateMagnitudeOfDifference(area(source), calculatePerimeter(source), area(imgs[i]),calculatePerimeter(imgs[i]))==third)
 //			{
 //				nnImages[imgCounter] = imgs[i];
 //				imgCounter++;
 //			}
 //		}
-//		
-//		JVision j = new JVision();
-//		j.setBounds(0, 0, 1500, 1000);
-//		
-//		int x =0;
-//		int y = 0;	
-//		
-//		for(int i=0;i<nnImages.length;i++)
-//		{
-//			displayAnImage(nnImages[i], j, x, y, "");
-//			x+=250;
-//		}
-//		
-//		displayAnImage(source,j,0,500,"original");	
-//	}
+
+		JVision j = new JVision();
+		j.setBounds(0, 0, 1500, 1000);
+
+		int x =0;
+		int y = 0;	
+
+		for(int i=0;i<nnImages.length;i++)
+		{
+			displayAnImage(nnImages[i], j, x, y, "");
+			x+=250;
+		}
+
+		displayAnImage(source,j,0,500,"original");	
+	}
 
 	public static int standardDev(BufferedImage source)
 	{
@@ -357,28 +360,33 @@ public final class IISProcessor {
 		return postPImages;
 	}
 
-	public static int area(BufferedImage source)
+	public static int[] area(ArrayList<BufferedImage> source)
 	{
-
-		int width = source.getWidth();
-		int height = source.getHeight();
-		Raster r = source.getRaster();
-		width= r.getHeight();
-		height= r.getWidth();
-		int area=0;
-
-		for(int i=0;i<width;i++)
+		int [] areaArr = new int[source.size()];
+		for(int k=0;k<source.size();k++)
 		{
-			for(int j=0;j<height;j++)
+			int width = source.get(k).getWidth();
+			int height = source.get(k).getHeight();
+			Raster r = source.get(k).getRaster();
+			width= r.getHeight();
+			height= r.getWidth();
+			int area=0;
+
+			for(int i=0;i<width;i++)
 			{
-				if(r.getSample(j, i, 0)==1)
+				for(int j=0;j<height;j++)
 				{
-					area++;
+					if(r.getSample(j, i, 0)==1)
+					{
+						area++;
+					}
 				}
 			}
+			
+			areaArr[k]=area;
 		}
 
-		return area;	
+		return areaArr;	
 	}
 
 	public int[] calculatePerimeter(ArrayList<BufferedImage> images) throws IOException
@@ -387,7 +395,7 @@ public final class IISProcessor {
 		int[] perArr = new int[images.size()];
 		for(int k=0;k<images.size();k++)
 		{
-			
+
 			int width = images.get(k).getWidth();
 			int height = images.get(k).getHeight();
 			int [][] perimeterDraw = new int [width][height]; 
@@ -425,9 +433,9 @@ public final class IISProcessor {
 
 				}
 			}
-			
+
 			perArr[k] = perimeter;
-			
+
 
 			for(int i=0;i<width;i++)
 			{
@@ -441,11 +449,11 @@ public final class IISProcessor {
 			}
 
 			out.close();
-			
+
 		}
-		
+
 		return perArr;
-	
+
 	}
 
 	public static BufferedImage readInImage(String filename)
