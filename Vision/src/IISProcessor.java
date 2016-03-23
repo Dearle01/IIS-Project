@@ -179,22 +179,22 @@ public final class IISProcessor {
 		ArrayList<BufferedImage> LSImages = new ArrayList<BufferedImage>();
 		for(BufferedImage img : images)
 		{		
-			float threshold = (float) (mean(img) + 0.5  * standardDev(img));		
+			float threshold = (float) (mean(img) + 0.7  * standardDev(img));		
 
 			short [] arr = new short[256];
-
+			
 			for(int i=0;i<arr.length;i++)
 			{
 				if(i <= threshold)
 				{
-					arr[i] = 255;
+					arr[i] = 0;
 				}
 				else
 				{
-					arr[i] = 0;
+					arr[i] = 255;
 				}
 			}
-			LSImages.add(ImageOp.pixelop(img ,arr));	
+			LSImages.add(ImageOp.pixelop(img ,arr));
 		}
 		return LSImages;
 	}
