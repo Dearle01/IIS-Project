@@ -339,9 +339,9 @@ public final class IISProcessor {
 		ArrayList<BufferedImage> postPImages = new ArrayList<BufferedImage>();
 		for(BufferedImage img : images)
 		{
-			BufferedImage i = ImageOp.dilate(img, 2);
-			i = ImageOp.open(img, 1);
-			postPImages.add(i);
+			BufferedImage i = ImageOp.open(img, 2);
+			BufferedImage j = ImageOp.close(i, 2);
+			postPImages.add(j);
 		}
 		return postPImages;
 	}
