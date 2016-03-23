@@ -64,9 +64,7 @@ public class VisionSystem
 			 //a.displayAllPostP();
 			 //a.displayAllThreshold();
 			 a.displayAllHistogram();
-			}
-	
-			//System.out.println(calculatePerimeter(postprocessedImages[i]));			
+			}			
 		}
 
 		catch(Exception e)
@@ -74,46 +72,6 @@ public class VisionSystem
 			System.out.println(e);
 			e.printStackTrace();
 		}
-	}
-
-	public int centroid(BufferedImage source)
-	{	
-		return 0;		
-	}
-	
-	//needs work
-	public int calculatePerimeter(BufferedImage source)
-	{
-		//A pixel is part of the perimeter if it is nonzero and it is connected to at least one zero-valued pixel.
-		
-		int width = source.getWidth();
-		int height = source.getHeight();
-		Raster r = source.getRaster();
-		width= r.getHeight();
-		height= r.getWidth();
-		int perimeter=0;
-		
-		for(int i=1;i<width;i++)
-		{
-			for(int j=1;j<height;j++)
-			{
-				if(r.getSample(j, i, 0)==1)
-				{
-					//breaks because check is wrong
-					if(i>0&&j>0)				
-					{
-						if(r.getSample(j-1, i, 0)==0||r.getSample(j+1, i, 0)==0||r.getSample(j, i-1, 0)==0||
-							r.getSample(j, i+1, 0)==0||r.getSample(j-1, i+1, 0)==0||r.getSample(j-1, i-1, 0)==0||
-							r.getSample(j+1, i+1, 0)==0||r.getSample(j+1, i-1, 0)==0)
-						{										
-							perimeter++;
-						}
-					}
-				}
-			}
-		}
-		
-		return perimeter;		
 	}
 	
 	public BufferedImage readInImage(String filename)

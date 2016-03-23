@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 
 public final class IISProcessor {
 	private IISProcessor()
@@ -262,60 +263,39 @@ public final class IISProcessor {
 				}
 
 
-
-		int [] vd = new int [imgs.size()];
-
-		vd=calculateMagnitudeOfDifference(v2t[0], v1t[0], v2d, v1d);
+		int [] differenceMagnitudes = calculateMagnitudeOfDifference(v2t[0], v1t[0], areas, perimeters);
+		ArrayList<Integer> vd = new ArrayList<Integer>();
+		
+		for(int i=0;i<differenceMagnitudes.length;i++)
+		{
+			vd.add(differenceMagnitudes[i]);
+		}
+		
+		
 		
 
 		//select three closest images in terms of area
+		
+		ArrayList <Integer> threeSmallest = new ArrayList<Integer>();
+		int min = vd.indexOf(Collections.min(vd));
+		
+
+		
+		BufferedImage closest = imgs.get(min);
+		
+
+		JVision j = new JVision();
+		j.setBounds(0, 0, 1500, 1000);
+
+		int x =0;
+		int y = 0;	
+
+		
+		displayAnImage(closest, j, x, y, "");
+		x+=250;
 
 
-		Arrays.sort(vd);
-
-		int first = 0;
-		int second = 0;
-		int third = 0;
-
-		if(vd.length>=3)
-		{
-			//three smallest
-			first = vd[0];
-			second = vd[1];
-			third = vd[2];
-		}
-
-		System.out.println("First"+first);
-		System.out.println("Second"+second);
-		System.out.println("Third"+third);
-
-		BufferedImage [] nnImages = new BufferedImage [3];
-		int imgCounter=0;
-
-//		for(int i=0;i<imgs.length;i++)
-//		{
-//			if(calculateMagnitudeOfDifference(area(source), calculatePerimeter(source), area(imgs[i]),calculatePerimeter(imgs[i]))==first||
-//					calculateMagnitudeOfDifference(area(source), calculatePerimeter(source), area(imgs[i]),calculatePerimeter(imgs[i]))==second||
-//					calculateMagnitudeOfDifference(area(source), calculatePerimeter(source), area(imgs[i]),calculatePerimeter(imgs[i]))==third)
-//			{
-//				nnImages[imgCounter] = imgs[i];
-//				imgCounter++;
-//			}
-//		}
-//
-//		JVision j = new JVision();
-//		j.setBounds(0, 0, 1500, 1000);
-//
-//		int x =0;
-//		int y = 0;	
-//
-//		for(int i=0;i<nnImages.length;i++)
-//		{
-//			displayAnImage(nnImages[i], j, x, y, "");
-//			x+=250;
-//		}
-//
-//		displayAnImage(source,j,0,500,"original");	
+		displayAnImage(source,j,0,500,"CLOSEST IMAGE");	
 	}
 
 	public static int standardDev(BufferedImage source)
@@ -399,19 +379,13 @@ public final class IISProcessor {
 	{
 		ArrayList<BufferedImage> reducedImages = new ArrayList<BufferedImage>();
 		
-		JVision j = new JVision();
-		
-		j.setTitle("WHAT IS GOING ON HERE");
 		
 		for(BufferedImage img : images)
 		{
 			BufferedImage i = ImageOp.dilate(img, 2);//1 doesnt work, so 2? // dont't even ask
 			reducedImages.add(i);
-			displayAnImage(i, j, 0, 0, "");
+			
 		}
-		
-		displayAnImage(images.get(0), j, 400, 0, "");
-		
 		
 		
 		int imageCount = images.size();
@@ -515,6 +489,7 @@ public final class IISProcessor {
 		
 		
 	}
+	
 	
 	
 }
