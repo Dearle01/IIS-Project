@@ -85,7 +85,6 @@ public class Object {
 	public void PostProcess() throws IOException, HistogramException
 	{
 		postprocessedImages = IISProcessor.PostProcessImages(thresholdedImages);
-		IISProcessor.printAreas(postprocessedImages);
 	}
 
 

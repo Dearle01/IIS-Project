@@ -183,7 +183,7 @@ public final class IISProcessor {
 		ArrayList<BufferedImage> LSImages = new ArrayList<BufferedImage>();
 		for(BufferedImage img : images)
 		{		
-			float threshold = (float) (mean(img) + 0.4 * standardDev(img));		
+			float threshold = (float) (mean(img) + 0 * standardDev(img));		
 
 			short [] arr = new short[256];
 			
@@ -511,26 +511,6 @@ public final class IISProcessor {
 	public static void displayAnImage(BufferedImage img, JVision display, int x, int y, String title)
 	{
 		display.imdisp(img,title,x,y);
-	}
-	
-	public static void printAreas(ArrayList<BufferedImage> imgs) throws IOException
-	{
-		for(int i:area(imgs))
-		{
-			System.out.println("This is the area "+i);
-		}
-		
-		for(int i:getPerimeter(imgs))
-		{
-			System.out.println("This is Dearle's perimeter"+i);
-		}
-		
-		for(float f:getCompactness(imgs))
-		{
-			System.out.println("this is the compactness"+f);
-		}
-		
-		
 	}
 	
 	
