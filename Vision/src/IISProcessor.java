@@ -374,8 +374,8 @@ public final class IISProcessor {
 		testObject.PostProcess();
 		
 		IISProcessor.displayAnImage(testObject.postprocessedImages.get(0), jvis, 0, 0, "");
-		//return IISProcessor.nearestNeighbourCalc(testObject.postprocessedImages.get(0), classes);
-		return IISProcessor.getNearestCompactness(testObject.postprocessedImages.get(0),classes);
+		return IISProcessor.nearestNeighbourCalc(testObject.postprocessedImages.get(0), classes);
+		//return IISProcessor.getNearestCompactness(testObject.postprocessedImages.get(0),classes);
 	}
 
 	public static ArrayList<BufferedImage> PostProcessImages(ArrayList<BufferedImage> images)
