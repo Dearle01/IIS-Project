@@ -183,7 +183,7 @@ public final class IISProcessor {
 		ArrayList<BufferedImage> LSImages = new ArrayList<BufferedImage>();
 		for(BufferedImage img : images)
 		{		
-			float threshold = (float) (mean(img) + 0.7  * standardDev(img));		
+			float threshold = (float) (mean(img) + 0.4 * standardDev(img));		
 
 			short [] arr = new short[256];
 			
