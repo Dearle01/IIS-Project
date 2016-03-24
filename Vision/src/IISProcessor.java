@@ -223,12 +223,12 @@ public final class IISProcessor {
 		return mean;
 	}
 
-	public static int calculateMagnitudeOfDifference(int testArea, int testPerimeter, int testCompactness, int [] areas, int[] perimeters, int[] compactness)
+	public static int calculateMagnitudeOfDifference(int testArea, int testPerimeter, int [] areas, int[] perimeters)
 	{
 
 		int[] differenceAreas = new int [areas.length];
 		int[] differencePerimeters = new int [perimeters.length];
-		int[] differenceCompactness = new int [compactness.length];
+		//int[] differenceCompactness = new int [compactness.length];
 		
 		double[] sumOfDifferences = new double [perimeters.length];
 		int lowestMagnitude = Integer.MAX_VALUE;
@@ -237,8 +237,8 @@ public final class IISProcessor {
 		{
 			differenceAreas[i] = Math.abs(testArea - areas[i]);
 			differencePerimeters[i] = Math.abs(testPerimeter-perimeters[i]);
-			differenceCompactness[i]=Math.abs(testCompactness);
-			sumOfDifferences[i] = ((Math.pow(differenceAreas[i], 2) + (Math.pow(differencePerimeters[i],2) + (Math.pow(differenceCompactness[i],2)))));
+			//differenceCompactness[i]=Math.abs(testCompactness);
+			sumOfDifferences[i] = ((Math.pow(differenceAreas[i], 2) + (Math.pow(differencePerimeters[i],2))));
 			currentMagnitude = (int) Math.sqrt(sumOfDifferences[i]);
 			if(currentMagnitude < lowestMagnitude)
 			{
@@ -292,7 +292,7 @@ public final class IISProcessor {
 				Collections.addAll(sourceImage, source);
 				int[] v1t = getPerimeter(sourceImage);
 				int[] v2t = area(sourceImage);
-				int[] v3t = getCompactness(sourceImage);
+				//int[] v3t = getCompactness(sourceImage);
 				
 				int[] MagDif = new int[classes.size()];
 				int lowestMagIndex = 0;
@@ -303,8 +303,8 @@ public final class IISProcessor {
 				{		
 					int [] perimeters = getPerimeter(classes.elementAt(i).postprocessedImages);
 					int [] areas = area(classes.elementAt(i).postprocessedImages);
-					int [] compactness = getCompactness(classes.elementAt(i).postprocessedImages);
-					MagDif[i] = calculateMagnitudeOfDifference(v2t[0], v1t[0],v3t[0], areas, perimeters, compactness);
+					//int [] compactness = getCompactness(classes.elementAt(i).postprocessedImages);
+					MagDif[i] = calculateMagnitudeOfDifference(v2t[0], v1t[0], areas, perimeters);
 					if(MagDif[i] < lowestMagnitude)
 					{
 						//keep the index so that we can return that class
