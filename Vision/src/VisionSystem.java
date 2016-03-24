@@ -60,11 +60,13 @@ public class VisionSystem
 			 a.PostProcess();
 			
 			 a.displayAllTraining();
-			 //a.displayAllPreP();
-			 //a.displayAllPostP();
-			 //a.displayAllThreshold();
+			 a.displayAllPreP();
+			 a.displayAllPostP();
+			 a.displayAllThreshold();
 			 a.displayAllHistogram();
 			}			
+			Object test = IISProcessor.TestNewImage(classes);
+			System.out.print(test.name);			
 		}
 
 		catch(Exception e)

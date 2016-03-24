@@ -1,12 +1,16 @@
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Vector;
+
+import javax.swing.JFileChooser;
 
 public final class IISProcessor {
 	private IISProcessor()
@@ -219,83 +223,60 @@ public final class IISProcessor {
 		return mean;
 	}
 
-	public static int[] calculateMagnitudeOfDifference(int testArea, int testPerimeter, int [] areas, int[] perimeters)
+	public static int calculateMagnitudeOfDifference(int testArea, int testPerimeter, int [] areas, int[] perimeters)
 	{
 
-		int[] magnitude = new int [areas.length];
 		int[] differenceAreas = new int [areas.length];
 		int[] differencePerimeters = new int [perimeters.length];
-		double [] sumOfDifferences = new double [perimeters.length];
-		for(int i=0;i<magnitude.length;i++)
+		double[] sumOfDifferences = new double [perimeters.length];
+		int lowestMagnitude = 100000;
+		int currentMagnitude = 0;
+		for(int i=0;i<areas.length;i++)
 		{
-			differenceAreas[i]=testArea - areas[i];
-			differencePerimeters[i]=testPerimeter-perimeters[i];
-			sumOfDifferences[i] =((Math.pow(differenceAreas[i], 2) + (Math.pow(differencePerimeters[i],2))));
-			magnitude[i] = (int) Math.sqrt(sumOfDifferences[i]);
+			differenceAreas[i] = testArea - areas[i];
+			differencePerimeters[i] = testPerimeter-perimeters[i];
+			sumOfDifferences[i] = ((Math.pow(differenceAreas[i], 2) + (Math.pow(differencePerimeters[i],2))));
+			currentMagnitude = (int) Math.sqrt(sumOfDifferences[i]);
+			if(currentMagnitude < lowestMagnitude)
+			{
+				lowestMagnitude = currentMagnitude;
+			}
 		}
 
-		return magnitude;
+		return lowestMagnitude;
 
 	}
 
 	//This isnt finished
 	//Need to send in the image, but accesed through main?
-	public static void nearestNeighbourCalc(BufferedImage source, ArrayList <BufferedImage> imgs) throws IOException
+	public static Object nearestNeighbourCalc(BufferedImage source, Vector<Object> classes) throws IOException
 	{
-		//array containing area values for each other binary image
-		int [] v1d = new int [imgs.size()];
-		int [] v2d = new int [imgs.size()];
 		//get area of image passed in to calculate nearest neighbours
-		ArrayList<BufferedImage> sourceImage = new ArrayList<BufferedImage>();
-		Collections.addAll(sourceImage, source);
-		int[] v1t = getPerimeter(sourceImage);
-		int[] v2t = area(sourceImage);
-		int [] perimeters = new int [imgs.size()];
-		perimeters=getPerimeter(imgs);
-		int [] areas = new int [imgs.size()];
-		areas=area(imgs);
-		
-
-				for(int i=0;i<imgs.size();i++)
-				{	
-					v1d[i] = v1t[0]-perimeters[i];
-					v2d[i] = v2t[0]-areas[i];
+				ArrayList<BufferedImage> sourceImage = new ArrayList<BufferedImage>();
+				Collections.addAll(sourceImage, source);
+				int[] v1t = getPerimeter(sourceImage);
+				int[] v2t = area(sourceImage);
+				
+				int[] MagDif = new int[classes.size()];
+				int lowestMagIndex = 0;
+				int lowestMagnitude = Integer.MAX_VALUE;
+				
+				//do this for each group
+				for(int i = 0; i < classes.size(); i++)
+				{		
+					int [] perimeters = getPerimeter(classes.elementAt(i).thresholdedImages);
+					int [] areas = area(classes.elementAt(i).thresholdedImages);
+					MagDif[i] = calculateMagnitudeOfDifference(v2t[0], v1t[0], areas, perimeters);
+					if(MagDif[i] < lowestMagnitude)
+					{
+						//keep the index so that we can return that class
+						lowestMagIndex = i;
+						//record the max so we can keep comparing with newest value.
+						lowestMagnitude = MagDif[i];
+						System.out.println("Lowest Magnitude is now " + classes.elementAt(i).name + " at " + MagDif[i] + ". At Index of :" + i);
+					}
 				}
-
-
-		int [] differenceMagnitudes = calculateMagnitudeOfDifference(v2t[0], v1t[0], areas, perimeters);
-		ArrayList<Integer> vd = new ArrayList<Integer>();
-		
-		for(int i=0;i<differenceMagnitudes.length;i++)
-		{
-			vd.add(differenceMagnitudes[i]);
-		}
-		
-		
-		
-
-		//select three closest images in terms of area
-		
-		ArrayList <Integer> threeSmallest = new ArrayList<Integer>();
-		int min = vd.indexOf(Collections.min(vd));
-		
-
-		
-		BufferedImage closest = imgs.get(min);
-		
-
-		JVision j = new JVision();
-		j.setBounds(0, 0, 1500, 1000);
-
-		int x =0;
-		int y = 0;	
-
-		
-		displayAnImage(closest, j, x, y, "");
-		x+=250;
-
-
-		displayAnImage(source,j,0,500,"CLOSEST IMAGE");	
+				return classes.elementAt(lowestMagIndex);
 	}
 
 	public static int standardDev(BufferedImage source)
@@ -332,6 +313,30 @@ public final class IISProcessor {
 		sqdif/=(width*height);
 
 		return (int) Math.sqrt(sqdif);
+	}
+	
+	public static Object TestNewImage(Vector<Object> classes) throws IOException, HistogramException
+	{
+		JVision jvis = new JVision();
+
+		jvis.setBounds(0, 0, 1500, 1000);
+		jvis.setTitle("Testing Phase");
+
+		JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
+
+		chooser.showOpenDialog(jvis);
+		File file = chooser.getSelectedFile();
+
+		BufferedImage testImage = IISProcessor.readInImage(file.getName());
+		ArrayList<BufferedImage> image = new ArrayList<BufferedImage>();
+		image.add(testImage);
+		Object testObject = new Object(image, "");
+		testObject.Preprocess();
+		testObject.Threshold();
+		testObject.PostProcess();
+		
+		IISProcessor.displayAnImage(testObject.postprocessedImages.get(0), jvis, 0, 0, "");
+		return IISProcessor.nearestNeighbourCalc(testObject.postprocessedImages.get(0), classes);
 	}
 
 	public static ArrayList<BufferedImage> PostProcessImages(ArrayList<BufferedImage> images)

@@ -86,32 +86,6 @@ public class Object {
 	{
 		postprocessedImages = IISProcessor.PostProcessImages(thresholdedImages);
 		IISProcessor.printAreas(postprocessedImages);
-		TestNewImage();
-	}
-
-	public void TestNewImage() throws IOException, HistogramException
-	{
-		JVision jvis = new JVision();
-
-		jvis.setBounds(0, 0, 1500, 1000);
-		jvis.setTitle("Testing Phase");
-
-		JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
-
-		chooser.showOpenDialog(jvis);
-		File file = chooser.getSelectedFile();
-
-		BufferedImage testImage = IISProcessor.readInImage(file.getName());
-		ArrayList<BufferedImage> sourceImage = new ArrayList<BufferedImage>();
-		Collections.addAll(sourceImage, testImage);
-		
-		sourceImage= IISProcessor.PowerLaw(sourceImage,1.5f);
-		sourceImage = IISProcessor.EnhanceBrightness(sourceImage, 20);
-		sourceImage = IISProcessor.ThresholdImages(sourceImage);
-		sourceImage = IISProcessor.PostProcessImages(sourceImage);	
-		
-		IISProcessor.nearestNeighbourCalc(sourceImage.get(0), postprocessedImages);
-
 	}
 
 
