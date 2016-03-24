@@ -223,19 +223,22 @@ public final class IISProcessor {
 		return mean;
 	}
 
-	public static int calculateMagnitudeOfDifference(int testArea, int testPerimeter, int [] areas, int[] perimeters)
+	public static int calculateMagnitudeOfDifference(int testArea, int testPerimeter, int testCompactness, int [] areas, int[] perimeters, int[] compactness)
 	{
 
 		int[] differenceAreas = new int [areas.length];
 		int[] differencePerimeters = new int [perimeters.length];
+		int[] differenceCompactness = new int [compactness.length];
+		
 		double[] sumOfDifferences = new double [perimeters.length];
-		int lowestMagnitude = 100000;
+		int lowestMagnitude = Integer.MAX_VALUE;
 		int currentMagnitude = 0;
 		for(int i=0;i<areas.length;i++)
 		{
-			differenceAreas[i] = testArea - areas[i];
-			differencePerimeters[i] = testPerimeter-perimeters[i];
-			sumOfDifferences[i] = ((Math.pow(differenceAreas[i], 2) + (Math.pow(differencePerimeters[i],2))));
+			differenceAreas[i] = Math.abs(testArea - areas[i]);
+			differencePerimeters[i] = Math.abs(testPerimeter-perimeters[i]);
+			differenceCompactness[i]=Math.abs(testCompactness);
+			sumOfDifferences[i] = ((Math.pow(differenceAreas[i], 2) + (Math.pow(differencePerimeters[i],2) + (Math.pow(differenceCompactness[i],2)))));
 			currentMagnitude = (int) Math.sqrt(sumOfDifferences[i]);
 			if(currentMagnitude < lowestMagnitude)
 			{
@@ -245,6 +248,39 @@ public final class IISProcessor {
 
 		return lowestMagnitude;
 
+	}
+	
+	
+	public static Object getNearestCompactness(BufferedImage source, Vector<Object>classes)
+	{
+		ArrayList<BufferedImage> sourceImage = new ArrayList<BufferedImage>();
+		Collections.addAll(sourceImage, source);
+		
+		int[] v3t = getCompactness(sourceImage);
+		
+		int[] MagDif = new int[classes.size()];
+		int lowestMagIndex = 0;
+		int lowestMagnitude = Integer.MAX_VALUE;
+		
+		for(int i=0;i<classes.size();i++)
+		{
+			int [] compactness = getCompactness(classes.elementAt(i).postprocessedImages);
+			if(v3t[0]>compactness[i])
+			MagDif[i] = Math.abs(v3t[0]- compactness[i]);
+			else
+				MagDif[i] = Math.abs(compactness[i]-v3t[0]);
+			
+			
+			if(MagDif[i] < lowestMagnitude)
+			{
+				//keep the index so that we can return that class
+				lowestMagIndex = i;
+				//record the max so we can keep comparing with newest value.
+				lowestMagnitude = MagDif[i];
+				System.out.println("Lowest compactness is now " + classes.elementAt(i).name + " at " + MagDif[i] + ". At Index of :" + i);
+			}
+		}
+		return classes.elementAt(lowestMagIndex);
 	}
 
 	//This isnt finished
@@ -256,6 +292,7 @@ public final class IISProcessor {
 				Collections.addAll(sourceImage, source);
 				int[] v1t = getPerimeter(sourceImage);
 				int[] v2t = area(sourceImage);
+				int[] v3t = getCompactness(sourceImage);
 				
 				int[] MagDif = new int[classes.size()];
 				int lowestMagIndex = 0;
@@ -264,9 +301,10 @@ public final class IISProcessor {
 				//do this for each group
 				for(int i = 0; i < classes.size(); i++)
 				{		
-					int [] perimeters = getPerimeter(classes.elementAt(i).thresholdedImages);
-					int [] areas = area(classes.elementAt(i).thresholdedImages);
-					MagDif[i] = calculateMagnitudeOfDifference(v2t[0], v1t[0], areas, perimeters);
+					int [] perimeters = getPerimeter(classes.elementAt(i).postprocessedImages);
+					int [] areas = area(classes.elementAt(i).postprocessedImages);
+					int [] compactness = getCompactness(classes.elementAt(i).postprocessedImages);
+					MagDif[i] = calculateMagnitudeOfDifference(v2t[0], v1t[0],v3t[0], areas, perimeters, compactness);
 					if(MagDif[i] < lowestMagnitude)
 					{
 						//keep the index so that we can return that class
@@ -336,7 +374,8 @@ public final class IISProcessor {
 		testObject.PostProcess();
 		
 		IISProcessor.displayAnImage(testObject.postprocessedImages.get(0), jvis, 0, 0, "");
-		return IISProcessor.nearestNeighbourCalc(testObject.postprocessedImages.get(0), classes);
+		//return IISProcessor.nearestNeighbourCalc(testObject.postprocessedImages.get(0), classes);
+		return IISProcessor.getNearestCompactness(testObject.postprocessedImages.get(0),classes);
 	}
 
 	public static ArrayList<BufferedImage> PostProcessImages(ArrayList<BufferedImage> images)
@@ -373,7 +412,7 @@ public final class IISProcessor {
 					}
 				}
 			}			
-			areaArr[k]=(width*height)-area;
+			areaArr[k]=area;
 		}
 		return areaArr;	
 	}
@@ -387,11 +426,10 @@ public final class IISProcessor {
 		
 		for(BufferedImage img : images)
 		{
-			BufferedImage i = ImageOp.dilate(img, 2);//1 doesnt work, so 2? // dont't even ask
+			BufferedImage i = ImageOp.erode(img, 2);//1 doesnt work, so 2? // dont't even ask
 			reducedImages.add(i);
 			
 		}
-		
 		
 		int imageCount = images.size();
 		int[] perArr = new int[imageCount];
@@ -407,16 +445,16 @@ public final class IISProcessor {
 		return perArr;
 	}
 	
-	public static float[] getCompactness(ArrayList<BufferedImage> images)
+	public static int[] getCompactness(ArrayList<BufferedImage> images)
 	{	
-		float [] compactnessValues = new float[images.size()];
+		int [] compactnessValues = new int[images.size()];
 		int [] perimeters = new int [images.size()];
 		perimeters=getPerimeter(images);
 		int [] areas = new int [images.size()];
 		areas=area(images);
 		for(int i=0;i<compactnessValues.length;i++)
 		{
-			compactnessValues[i]=(float) (Math.pow(perimeters[i],2)/areas[i]);
+			compactnessValues[i]=(int) (Math.pow(perimeters[i],2)/areas[i]);
 		}
 		
 		return compactnessValues;
